@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//User
+model User {
+  id              String   @id @unique @default(uuid())
+  email           String   @unique
+  username        String
+  password        String
+  createdAt       DateTime @default(now())
+  confirmPassword String
+  roleCode        Role    @default(ADMIN)
+  birth           String?
+  gender          String?
+  phoneNumber     String?
+
+  @@map("user")
+}
+
+ enum Role {
+  USER
+  ADMIN
+}
+
+//movies 
+
+// model Movies {
+//   id              String     @id @unique @default(uuid())
+//   name            String
+//   category        String
+//   movieDuration   String
+//   limitedAudience String
+//   image           String?
+//   imageKey        String?
+//   releaseDate     String
+//   showTime        ShowTime[]
+//   ticket          Ticket[]
+
+//   @@map("movies")
+// }
+
+model MovieTheater {
+  id       String     @id @unique @default(uuid())
+  name     String     @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  showTime ShowTime[]
+  invoices Invoices[]
+}
+
+//Invoice  ticket
+
+model Invoices {
+  id            String   @id @unique @default(uuid())
+  movieName     String
+  client        String
+  totalMoney    String
+  paymentNumber String
+  phoneNumber   String
+  listSeats     String[]
+  movieTheaterId  String
+  movieTheater   MovieTheater @relation(fields: [movieTheaterId], references: [id])
+  showTimeId      String
+  showTime   ShowTime @relation(fields: [showTimeId], references: [id],onDelete: Cascade)
+  foods String[]
+  @@map("invoices")
+}
+
+model Payments {
+  id          String @id @unique @default(uuid())
+  paymentName String
+
+  @@map("payments")
+}
+
+model Food {
+  id    String @id @unique @default(uuid())
+  name  String
+  image String
+  imageKey String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  price String
+  invoice   String[] 
+}
+
+model Ticket {
+  id        String @id @unique @default(uuid())
+  invoiceId String
+  movieId   String
+  // movies    Movies   @relation(fields: [movieId], references: [id])
+  seatId    String
+
+  @@map("ticket")
+}
+
+model ShowTime {
+  id             String       @id @unique @default(uuid())
+  time           String
+  date           String
+  movieId        String
+  movieName      String
+    createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // movies         Movies       @relation(fields: [movieId], references: [id])
+  movieTheaterId String
+  movieTheater   MovieTheater @relation(fields: [movieTheaterId], references: [id], onDelete: Cascade)
+  seats          Seats[]  
+  invoices Invoices[]
+  @@map("showTime")
+}
+
+ 
+model Seats {
+  id         String    @id @unique @default(uuid())
+  name       String
+  status     String
+  typeSeatId String
+  typeSeat   TypeSeat  @relation(fields: [typeSeatId], references: [id])
+  ShowTime   ShowTime @relation(fields: [showTimeId], references: [id],onDelete: Cascade)
+  showTimeId String
+
+  @@map("seats")
+}
+
+model TypeSeat {
+  id    String  @id @unique @default(uuid())
+  name  String
+  price String
+  seat  Seats[]
+
+  @@map("typeSeat")
+}
